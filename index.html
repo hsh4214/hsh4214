@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>친환경 제품 홈페이지</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+
+        header {
+            background-color: #4CAF50;
+            padding: 1em;
+            text-align: center;
+            color: white;
+        }
+
+        .product {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .product-item {
+            border: 1px solid #ddd;
+            padding: 10px;
+            margin: 10px;
+            text-align: center;
+            cursor: pointer;
+        }
+
+        .product-details {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            display: none;
+            margin-top: 20px;
+        }
+
+        .purchase-page {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            align-items: center;
+            display: none;
+            margin-top: 50px;
+        }
+
+        #productImage,
+        #purchaseImage {
+            max-width: 100%;
+            max-height: 100%;
+        }
+
+        #confirmationPage {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url('https://images.unsplash.com/photo-1566780857657-115d3fef5448?q=80&w=1931&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D') no-repeat center center fixed;
+            background-size: cover;
+            color: black;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+        }
+
+        #confirmationPage button {
+            margin-top: 20px;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        .quantity-controls {
+            display: flex;
+            align-items: center;
+            margin-top: 10px;
+        }
+
+        .quantity-controls button {
+            padding: 5px 10px;
+            font-size: 14px;
+            cursor: pointer;
+            margin: 0 5px;
+        }
+
+        /* 수정된 부분 시작 */
+        .purchase-page {
+            margin-top: 50px;
+        }
+
+        #purchaseImage {
+            margin-top: 20px;
+        }
+        /* 수정된 부분 끝 */
+    </style>
+</head>
+
+<body>
+
+    <header>
+        <h1>친환경 제품 홈페이지</h1>
+    </header>
+
+    <div class="product">
+        <div class="product-item" onclick="showProductDetails('Eco Bottle', '사탕수수', 5, 20000, 'https://source.unsplash.com/UgeZDqfofXU/800x600')">
+            <img src="https://source.unsplash.com/UgeZDqfofXU/800x600" alt="Eco Bottle" style="max-width: 100%; max-height: 100%;">
+            <p>Eco Bottle</p>
+        </div>
+        <div class="product-item" onclick="showProductDetails('Eco Bag', '대나무', 8, 35000, 'https://source.unsplash.com/My0w1D60RkM/800x600')">
+            <img src="https://source.unsplash.com/My0w1D60RkM/800x600" alt="Eco Bag" style="max-width: 100%; max-height: 100%;">
+            <p>Eco Bag</p>
+        </div>
+    </div>
+
+    <div class="product-details" id="productDetails">
+        <img id="productImage" alt="제품 이미지">
+        <h2 id="productName"></h2>
+        <p id="productMaterial"></p>
+        <p id="treesSaved"></p>
+        <div class="quantity-controls">
+            <button onclick="decrementQuantity()">-</button>
+            <span id="productQuantity">1</span>
+            <button onclick="incrementQuantity()">+</button>
+        </div>
+        <button onclick="showPurchasePage()">구매하기</button>
+    </div>
+
+    <div class="purchase-page" id="purchasePage">
+        <img id="purchaseImage" alt="제품 이미지">
+        <h2 id="purchaseProductName"></h2>
+        <p id="purchaseProductPrice"></p>
+        <button onclick="confirmPurchase()">구매확정</button>
+    </div>
+
+    <div id="confirmationPage">
+        <h2>당신 덕분에 건강한 지구가 만들어집니다.</h2>
+        <button onclick="closeAllWindows()">방문 종료하기</button>
+    </div>
+
+    <script>
+        let currentQuantity = 1;
+        let treesSavedPerProduct = 0;
+
+        function showProductDetails(name, material, trees, price, imagePath) {
+            document.getElementById('purchaseProductName').innerText = '';
+            document.getElementById('purchaseProductPrice').innerText = '';
+            document.getElementById('purchasePage').style.display = 'none';
+
+            document.getElementById('productName').innerText = name;
+            document.getElementById('productMaterial').innerText = '소재: ' + material;
+            treesSavedPerProduct = trees;
+            updateTreesSaved(); // 초기화할 때 업데이트 호출
+            document.getElementById('productDetails').style.display = 'flex';
+
+            document.getElementById('productImage').src = imagePath;
+
+            document.getElementById('purchasePage').setAttribute('data-price', price);
+
+            // 수량 초기화
+            currentQuantity = 1;
+            document.getElementById('productQuantity').innerText = currentQuantity;
+        }
+
+        function showPurchasePage() {
+            const productName = document.getElementById('productName').innerText;
+            const productPrice = parseFloat(document.getElementById('purchasePage').getAttribute('data-price'));
+
+            document.getElementById('purchaseProductName').innerText = productName;
+            document.getElementById('purchaseProductPrice').innerText = '가격: ' + calculateTotalPrice(productPrice) + '원';
+            document.getElementById('purchaseImage').src = document.getElementById('productImage').src;
+            document.getElementById('purchasePage').style.display = 'flex';
+        }
+
+        function calculateTotalPrice(price) {
+            return price * currentQuantity;
+        }
+
+        function incrementQuantity() {
+            currentQuantity += 1;
+            document.getElementById('productQuantity').innerText = currentQuantity;
+            updateTreesSaved(); // 수량이 변경되면 나무 수 업데이트
+        }
+
+        function decrementQuantity() {
+            if (currentQuantity > 1) {
+                currentQuantity -= 1;
+                document.getElementById('productQuantity').innerText = currentQuantity;
+                updateTreesSaved(); // 수량이 변경되면 나무 수 업데이트
+            }
+        }
+
+        function updateTreesSaved() {
+            const treesSaved = currentQuantity * treesSavedPerProduct;
+            document.getElementById('treesSaved').innerText = '살릴 수 있는 나무의 수: ' + treesSaved + ' 그루';
+        }
+
+        function confirmPurchase() {
+            const treesSaved = document.getElementById('treesSaved').innerText.split(' ')[5];
+            document.getElementById('confirmationPage').style.display = 'flex';
+            document.body.style.overflow = 'hidden';
+            alert(`당신은 나무를 ${treesSaved} 그루를 살렸습니다!`);
+        }
+
+        function closeAllWindows() {
+            document.getElementById('confirmationPage').style.display = 'none';
+            document.getElementById('productDetails').style.display = 'none';
+            document.getElementById('purchasePage').style.display = 'none';
+            window.close();
+        }
+    </script>
+
+</body>
+
+</html>
